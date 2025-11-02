@@ -34,15 +34,14 @@ steps:
         "--platform=managed",
         "--allow-unauthenticated",
         
-        # Variables de Entorno de Spring (Sintaxis Optimizada)
-        # Solo dejamos las variables necesarias para el runtime de Cloud Run.
-        "--set-env-vars", "SPRING_PROFILES_ACTIVE=prod,DB_PORT=3306", 
+        # Variables de Entorno de Spring
+        "--set-env-vars", "SPRING_PROFILES_ACTIVE=prod,DB_NAME=microservicedemo",
         
-        # ELIMINADO: Se eliminan las banderas --set-secrets y --set-env-vars DB_NAME 
-        # porque los valores se han codificado directamente en application.properties.
+        # Inyección de Secret Manager para DB_USER y DB_PASSWORD
+        "--set-secrets", "DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest",
         
-        # Conexión a Cloud SQL (CRÍTICO: Esto aún debe estar para inyectar el proxy)
-        "--add-cloudsql-instances", "practica1-476923:us-central1:my-sql-db"
+        # CRÍTICO: Nueva instancia de PostgreSQL
+        "--add-cloudsql-instances", "practica1-476923:us-central1:my-postgres-db"
       ]
 
 images:
