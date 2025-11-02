@@ -1,0 +1,49 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build User Service Image
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/practica1-476923/microservices/user-service",
+        "."
+      ]
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push User Service Image
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/practica1-476923/microservices/user-service"
+      ]
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Deploy User Service to Cloud Run
+    entrypoint: gcloud
+    args:
+      [
+        "run", "deploy", "user-service",
+        "--image=us-central1-docker.pkg.dev/practica1-476923/microservices/user-service",
+        "--region=us-central1",
+        "--platform=managed",
+        "--allow-unauthenticated",
+        
+        # Variables de Entorno de Spring (sin cambios)
+        "--set-env-vars", "SPRING_PROFILES_ACTIVE=prod",
+        
+        # **CORRECCIÓN 1: Nombre de la Base de Datos y Puerto**
+        "--set-env-vars", "DB_NAME=microservicedemo,DB_PORT=3306",
+        
+        # **CORRECCIÓN 2: Sintaxis de Secretos**
+        # Usa el formato 'ENV_VAR=SECRET_NAME:SECRET_VERSION' (usamos 'latest' para la versión)
+        "--set-secrets", "DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest",
+        
+        # Conexión a Cloud SQL (sin cambios)
+        "--add-cloudsql-instances", "practica1-476923:us-central1:my-sql-db"
+      ]
+
+images:
+  - "us-central1-docker.pkg.dev/practica1-476923/microservices/user-service"
+
+options:
+  defaultLogsBucketBehavior: CLOUD_LOGGING_ONLY

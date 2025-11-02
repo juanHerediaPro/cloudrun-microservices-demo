@@ -1,0 +1,47 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build Product Service Image
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/practica1-476923/microservices/product-service",
+        "."
+      ]
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push Product Service Image
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/practica1-476923/microservices/product-service"
+      ]
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Deploy Product Service to Cloud Run
+    entrypoint: gcloud
+    args:
+      [
+        "run", "deploy", "product-service",
+        "--image=us-central1-docker.pkg.dev/practica1-476923/microservices/product-service",
+        "--region=us-central1",
+        "--platform=managed",
+        "--allow-unauthenticated",
+        
+        "--set-env-vars", "SPRING_PROFILES_ACTIVE=prod",
+        
+        # **CORRECCIÓN 1: Nombre de la Base de Datos**
+        "--set-env-vars", "DB_NAME=microservicedemo,DB_PORT=3306",
+        
+        # **CORRECCIÓN 2: Sintaxis de Secretos (Nombre del secreto:versión)**
+        "--set-secrets", "DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest",
+        
+        # Conexión a Cloud SQL
+        "--add-cloudsql-instances", "practica1-476923:us-central1:my-sql-db"
+      ]
+
+images:
+  - "us-central1-docker.pkg.dev/practica1-476923/microservices/product-service"
+
+options:
+  defaultLogsBucketBehavior: CLOUD_LOGGING_ONLY
