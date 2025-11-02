@@ -8,7 +8,7 @@ steps:
         "us-central1-docker.pkg.dev/practica1-476923/microservices/user-service",
         "."
       ]
-      dir: user-service
+    dir: user-service
 
   - name: gcr.io/cloud-builders/docker
     id: Push User Service Image
