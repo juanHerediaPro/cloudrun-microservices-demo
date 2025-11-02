@@ -46,4 +46,4 @@ images:
   - "us-central1-docker.pkg.dev/practica1-476923/microservices/user-service"
 
 options:
-  defaultLogsBucketBehavior: CLOUD_LOGGING_ONLY
+  logging: CLOUD_LOGGING_ONLY
