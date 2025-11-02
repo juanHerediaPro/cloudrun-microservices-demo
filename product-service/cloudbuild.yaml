@@ -1,4 +1,5 @@
 steps:
+  # Paso 0: Construir la Imagen del Product Service (Asegúrate que el 'dir' sea correcto)
   - name: gcr.io/cloud-builders/docker
     id: Build Product Service Image
     args:
@@ -8,7 +9,11 @@ steps:
         "us-central1-docker.pkg.dev/practica1-476923/microservices/product-service",
         "."
       ]
+    # CRÍTICO: Debes especificar el directorio si no está en la raíz. 
+    # Si tu product-service está en un subdirectorio, añade: dir: product-service
+    dir: product-service
 
+  # Paso 1: Empujar la Imagen
   - name: gcr.io/cloud-builders/docker
     id: Push Product Service Image
     args:
@@ -17,6 +22,13 @@ steps:
         "us-central1-docker.pkg.dev/practica1-476923/microservices/product-service"
       ]
 
+  # Paso 2: (Opcional, pero bueno) Habilitar SQL Admin API (Ya lo hace User Service)
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Enable SQL Admin API
+    entrypoint: gcloud
+    args: ["services", "enable", "sqladmin.googleapis.com"]
+
+  # Paso 3: Desplegar el Product Service a Cloud Run
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: Deploy Product Service to Cloud Run
     entrypoint: gcloud
@@ -28,16 +40,14 @@ steps:
         "--platform=managed",
         "--allow-unauthenticated",
         
-        "--set-env-vars", "SPRING_PROFILES_ACTIVE=prod",
+        # Variables de Entorno de Spring y DB
+        "--set-env-vars", "SPRING_PROFILES_ACTIVE=prod,DB_NAME=microservicedemo",
         
-        # **CORRECCIÓN 1: Nombre de la Base de Datos**
-        "--set-env-vars", "DB_NAME=microservicedemo,DB_PORT=3306",
-        
-        # **CORRECCIÓN 2: Sintaxis de Secretos (Nombre del secreto:versión)**
+        # Inyección de Secret Manager
         "--set-secrets", "DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest",
         
-        # Conexión a Cloud SQL
-        "--add-cloudsql-instances", "practica1-476923:us-central1:my-sql-db"
+        # CRÍTICO: CONEXIÓN A POSTGRESQL (usando el nombre de conexión corregido)
+        "--add-cloudsql-instances", "practica1-476923:us-central1:my-postgres-db"
       ]
 
 images:
